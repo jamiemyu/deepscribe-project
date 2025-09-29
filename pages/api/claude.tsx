@@ -49,8 +49,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       messages: [{ role: "user", content: prompt }],
     });
 
-    console.log("!!!!! Claude done")
-    console.log(msg);
     res.status(200).json({ response: msg.content });
   } catch (error) {
     console.error('Error calling Claude API:', error);

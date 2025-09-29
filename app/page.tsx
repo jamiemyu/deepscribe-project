@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react';
 
 import InputForm from './components/InputForm';
 import TrialsList from './components/TrialsList';
-import { Trial, TrialStatus } from './components/TrialModel';
+import { convertClinicalApiResponseToTrials, Trial, TrialStatus } from './components/TrialModel';
 
 const getTrials = () => {
   const trial1: Trial = {
@@ -34,8 +34,6 @@ export default function Page() {
   const [loading, setLoading] = useState<boolean>(false);
 
   const [prompt, setPrompt] = useState<string>('');
-  const [llmResponse, setLlmResponse] = useState<string>('');
-
   const [trials, setTrials] = useState<Array<Trial>>([]);
 
   const callClaudeApi = async () => {
@@ -47,51 +45,19 @@ export default function Page() {
       body: JSON.stringify({ prompt }),
     });
     const data = await response.json();
-
-    if (data == undefined || data.response.length == 0) {
-      setError('Error: Empty response from Claude.');
-    } else {
-      setLlmResponse(data.response[0].text);
-    }
+    return data;
   };
 
-  const callClinicalTrialsApi = async () => {
-    const conditions = "";
-    const terms = "";
+  const callClinicalTrialsApi = async (llmResponse: string) => {
     const response = await fetch('/api/clinicaltrials', {
-      method: 'GET',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      //body: JSON.stringify({ conditions, terms }),
+      body: JSON.stringify(llmResponse),
     });
     const data = await response.json();
-
-    if (data == undefined) {
-      setError('Error: Empty response from Clinical Trials API');
-    } else {
-      // TODO Plumb through real data.
-      let trials = getTrials();
-      setTrials(trials);
-    }
-  };
-
-  const fetchChainedData = async () => {
-    try {
-      console.log('Calling Claude...');
-      await callClaudeApi();
-      console.log('Claude call completed!');
-
-      console.log('Calling clinical trials API...');
-      await callClinicalTrialsApi();
-      console.log('Clinical Trials API call completed!');
-
-    } catch (error) {
-      console.error('Error fetching Claude response:', error);
-      setError('Error: Could not get response from Claude.');
-    } finally {
-      setLoading(false);
-    }
+    return data;
   };
 
   const handlePromptChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -102,7 +68,35 @@ export default function Page() {
     e.preventDefault();
     setLoading(true);
 
-    await fetchChainedData();
+    let llmResponse = "";
+    try {
+      const data = await callClaudeApi();
+      if (data && data.response.length > 0) {
+        llmResponse = data.response[0].text;
+      }
+    } catch (error) {
+      console.error('Error fetching Claude response:', error);
+      setError('Error: Could not get response from Claude.');
+    } finally {
+      setLoading(false);
+    }
+
+    setLoading(true);
+    try {
+      const data = await callClinicalTrialsApi(llmResponse);
+      if (data == undefined) {
+        setError('Error: Empty response from Clinical Trials API');
+      } else {
+        const trials = convertClinicalApiResponseToTrials(data);
+        console.log(trials);
+        setTrials(trials);
+      }
+    } catch (error) {
+      console.error('Error fetching ClinicalTrials response:', error);
+      setError('Error: Could not get response from ClinicalTrials API.');
+    } finally {
+      setLoading(false)
+    }
   };
 
   return (

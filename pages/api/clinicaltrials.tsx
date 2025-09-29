@@ -1,85 +1,88 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import type { ClinicalTrialsApiResponse, ClinicalTrialsStudy } from './ClinicalTrialsModel';
+import { ClinicalTrialsApiResponse, ClinicalTrialsQueryTerms } from './ClinicalTrialsModel';
 
 const CLINICAL_TRIALS_STUDIES_API_ENDPOINT = "https://clinicaltrials.gov/api/v2/studies";
+const OR_OPERAND = ' OR ';
+
 
 /**
- * Interface for the function parameters
+ * Represents the URL query parameters.
  */
 type UrlBuilderParams = {
     baseUrl: string;
-    conditions: string[];
-    terms: string[];
+    queryTerms?: ClinicalTrialsQueryTerms;
     format?: string;
 };
 
 /**
- * Helper function to build a URL with query parameters for format and query.cond
+ * Builds a URL with query parameters.
  * 
- * @param baseUrl - The base URL to append query parameters to
- * @param conditions - Array of condition strings to concatenate with essie expression syntax
- * @param terms - Array of term strings to concatenate with essie expression syntax
- * @param format - Optional format parameter (defaults to 'json')
+ * @param baseUrl - The base URL to append query parameters to.
+ * @param queryTerms - The structured data used for querying.
+ * @param format - String literal for the format requested.
  * @returns Complete URL with query parameters
  */
-export function buildUrl({
+function buildUrl({
     baseUrl,
-    conditions,
-    terms,
+    queryTerms,
     format = 'json'
   }: UrlBuilderParams): string {
-    // Remove trailing slash from baseUrl if present
+    // Remove trailing slash from baseUrl if present.
     const cleanBaseUrl = baseUrl.replace(/\/$/, '');
     
-    // Create URLSearchParams to properly encode query parameters
+    // Create URLSearchParams to properly encode query parameters.
     const params = new URLSearchParams();
     
-    // Add format parameter
+    // Add format parameter.
     params.append('format', format);
     
-    // Concatenate conditions using essie expression syntax (AND operator)
-    if (conditions.length > 0) {
-      const concatenatedConditions = conditions
-        .filter(condition => condition.trim() !== '') // Remove empty conditions
-        .map(condition => condition.trim())
-        .join(' AND ');
-      
-      if (concatenatedConditions) {
-        params.append('query.cond', concatenatedConditions);
-      }
+    // Add query parameters.
+    if (queryTerms) {
+        if (queryTerms.conditions && queryTerms.conditions.length > 0) {
+            const concatenatedConditions = concatenate(queryTerms.conditions, OR_OPERAND);
+            if (concatenatedConditions) {
+                params.append('query.cond', concatenatedConditions);
+            }
+        }
+
+        if (queryTerms.terms && queryTerms.terms.length > 0) {
+            const concatenatedTerms = concatenate(queryTerms.terms, OR_OPERAND);
+            if (concatenatedTerms) {
+                params.append('query.term', concatenatedTerms);
+            }
+        }
+
+        if (queryTerms.interventions && queryTerms.interventions.length > 0) {
+            const concatenatedTerms = concatenate(queryTerms.interventions, OR_OPERAND);
+            if (concatenatedTerms) {
+                params.append('query.intr', concatenatedTerms);
+            }
+        }
     }
 
-    // Concatenate terms using essie expression syntax (AND operator)
-    if (terms.length > 0) {
-      const concatenatedTerms = terms
-        .filter(term => term.trim() !== '') // Remove empty conditions
-        .map(term => term.trim())
-        .join(' AND ');
-      
-      if (concatenatedTerms) {
-        params.append('query.term', concatenatedTerms);
-      }
-    }
-    
-    // Build final URL
     return `${cleanBaseUrl}?${params.toString()}`;
   }
 
+/** 
+ * Concatenates phrases using essie expression syntax and the provided join operation.
+ * 
+ * @param words - Array of words to concatenate with essie expression syntax.
+ * @param joiner - String literal for the join operation.
+ */
+function concatenate(words: string[], joiner: string) {
+    return words
+        .filter(word => word.trim() !== '') // Remove empty conditions
+        .map(word => word.trim())
+        .join(joiner);
+}
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  /*if (req.method !== 'POST') {
-    return res.status(405).json({ message: 'POST Method required, ' + req.method + ' Not Allowed' });
-  }*/
-
-  //const { conditions, terms } = await req.body;
-  const conditions = [""];
-  const terms = [""];
-
-  /*if (!prompt) {
-    return res.status(400).json({ message: 'User prompt is required' });
-  }*/
+  const body = await req.body;
+  const queryTerms: ClinicalTrialsQueryTerms = JSON.parse(body);
 
   try {
-    const response = await fetch(buildUrl({baseUrl: CLINICAL_TRIALS_STUDIES_API_ENDPOINT, conditions, terms}));
+    const clinicalTrialsUrl = buildUrl({baseUrl: CLINICAL_TRIALS_STUDIES_API_ENDPOINT, queryTerms});
+    const response = await fetch(clinicalTrialsUrl);
 
     if (!response.ok) {
         throw new Error(`ClinicalTrials.gov API responded with status ${response.status}`);
@@ -88,7 +91,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const data: ClinicalTrialsApiResponse = await response.json();
     res.status(200).json(data);
   } catch (error) {
-    console.error('Error calling Claude API:', error);
+    console.error('Error calling Clinical Trials API:', error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 }

@@ -14,7 +14,7 @@ const TrialsList: React.FC<TrialsListProps> = ({ trials }) => {
             {trial.title}
         </td>
         <td className="px-6 py-4 text-sm border-b border-gray-100">
-            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(trial.status)}`}>
+            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full text-center ${trial.status && getStatusColor(trial.status)}`}>
             {trial.status}
             </span>
         </td>
@@ -23,6 +23,8 @@ const TrialsList: React.FC<TrialsListProps> = ({ trials }) => {
 
     const getStatusColor = (status: TrialStatus) => {
         switch (status) {
+          case TrialStatus.TRIAL_STATUS_ACTIVE_NOT_RECRUITING:
+            return 'bg-orange-100 text-orange-800';
           case TrialStatus.TRIAL_STATUS_COMPLETED:
             return 'bg-green-100 text-green-800';
           case TrialStatus.TRIAL_STATUS_RECRUITING:
