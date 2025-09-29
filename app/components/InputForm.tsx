@@ -13,14 +13,13 @@ const InputForm: React.FC<InputFormProps> = (
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <form onSubmit={onFormSubmit}>
-        <input
-          type="text"
+        <textarea
           value={prompt}
           onChange={(e) => onPromptChange(e)}
           placeholder="Enter your prompt"
           disabled={loading}
         />
-        <button type="submit" disabled={loading}>
+        <button className="p-4" type="submit" disabled={loading}>
           {loading ? 'Sending...' : 'Ask Claude'}
         </button>
       </form>

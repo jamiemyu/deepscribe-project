@@ -1,0 +1,9 @@
+Dr. Martinez (Oncologist): Good morning, Mrs. Chen. How are you feeling today?
+Patient: Well, the fatigue is still there, but maybe a little better than last week. The pain in my upper back has been more manageable.
+Dr. Martinez: That's good to hear. I have your latest blood sample results here. Your white blood cell count has improved since we adjusted your treatment protocol. How has the hypofractionated radiation therapy been going?
+Patient: The treatments themselves aren't too bad, but I'm definitely more tired afterward. The technicians explained that this approach means fewer sessions overall?
+Dr. Martinez: Exactly. We're delivering higher doses per session, which allows us to complete your radiation course in three weeks instead of six. Given that your pathology confirmed adenocarcinoma with involvement of the mediastinal lymph nodes, this approach has shown excellent outcomes for neoplasms by site in your specific location.
+Patient: I still don't fully understand all the medical terminology. When you say 'adenocarcinoma,' what does that mean exactly?
+Dr. Martinez: Adenocarcinoma is a type of cancer that forms in the glandular cells. In your case, it started in your lung tissue. The good news is that your most recent computed tomography scan shows the tumor has decreased in size by about 30% since we started treatment.
+Patient: That's encouraging. What about this chronic pain I've been having in my shoulder and arm? Could it be related?
+Dr. Martinez: That upper extremity problem you're experiencing could be related to nerve irritation from the tumor's previous size, or potentially from the radiation field. We'll monitor it closely. I may refer you to our pain management team if it doesn't improve over the next few weeks.
