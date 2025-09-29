@@ -2,41 +2,19 @@
 
 import React, { useEffect, useState } from 'react';
 
-import InputForm from './components/InputForm';
+import UploadForm from './components/UploadForm';
 import TrialsList from './components/TrialsList';
-import { convertClinicalApiResponseToTrials, Trial, TrialStatus } from './components/TrialModel';
-
-const getTrials = () => {
-  const trial1: Trial = {
-      nctId: 'NCT03540771',
-      title: 'Introducing Palliative Care (PC) Within the Treatment of End Stage Liver Disease (ESLD)',
-      status: TrialStatus.TRIAL_STATUS_COMPLETED,
-      hasResults: false,
-  };
-  const trial2: Trial = {
-      nctId: 'NCT03630471',
-      title: 'Effectiveness of a Problem-solving Intervention for Common Adolescent Mental Health Problems in India',
-      status: TrialStatus.TRIAL_STATUS_COMPLETED,
-      hasResults: false,
-  };
-  const trial3: Trial = {
-      nctId: 'NCT00587795',
-      title: 'Orthopedic Study of the Aircast StabilAir Wrist Fracture Brace',
-      status: TrialStatus.TRIAL_STATUS_TERMINATED,
-      hasResults: true,
-  };
-
-  return [trial1, trial2, trial3];
-};
+import { convertClinicalApiResponseToTrials, Trial } from './components/TrialModel';
 
 export default function Page() {
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
+  const [complete, setComplete] = useState<boolean>(false);
 
-  const [prompt, setPrompt] = useState<string>('');
+  const [file, setFile] = useState<File | null>(null);
   const [trials, setTrials] = useState<Array<Trial>>([]);
 
-  const callClaudeApi = async () => {
+  const callClaudeApi = async (prompt: string) => {
     const response = await fetch('/api/claude', {
       method: 'POST',
       headers: {
@@ -60,17 +38,63 @@ export default function Page() {
     return data;
   };
 
-  const handlePromptChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPrompt(e.target.value);
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files) {
+        return;
+    }
+
+    const selectedFile = e.target.files[0];
+    setError('');
+    setComplete(false);
+
+    if (selectedFile) {
+      if (selectedFile.type === 'text/plain' || selectedFile.name.endsWith('.txt')) {
+          setFile(selectedFile);
+      } else {
+          setError('Please select a .txt file');
+          setFile(null);
+          e.target.value = '';
+      }
+    }
   };
+
+  const handleFormReset = () => {
+      setComplete(false);
+      setError('');
+  };
+
+  const processFile = async (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onload = (e: ProgressEvent) => {
+        if (reader.result) {
+          resolve(reader.result as string);
+        }
+      };
+      
+      reader.onerror = () => {
+        reject(new Error('Failed to read file'));
+      };
+
+      reader.readAsText(file);
+    });
+  }
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
+    if (file == null) {
+      handleFormReset();
+      console.error('Valid .txt file must be uploaded.');
+      return;
+    }
+    const prompt = await processFile(file);
+
     let llmResponse = "";
     try {
-      const data = await callClaudeApi();
+      const data = await callClaudeApi(prompt);
       if (data && data.response.length > 0) {
         llmResponse = data.response[0].text;
       }
@@ -88,7 +112,6 @@ export default function Page() {
         setError('Error: Empty response from Clinical Trials API');
       } else {
         const trials = convertClinicalApiResponseToTrials(data);
-        console.log(trials);
         setTrials(trials);
       }
     } catch (error) {
@@ -100,13 +123,17 @@ export default function Page() {
   };
 
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
+    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-10">
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <InputForm onPromptChange={handlePromptChange}
-                   onFormSubmit={handleFormSubmit}
-                   prompt={prompt}
-                   loading={loading} />
-        <TrialsList trials={trials} />
+        <h1 className="text-2xl font-bold text-white">Clinical Trials Finder</h1>
+        <UploadForm onFileChange={handleFileChange}
+                    onReset={handleFormReset}
+                    onSubmit={handleFormSubmit}
+                    file={file}
+                    error={error}
+                    loading={loading}
+                    complete={complete}/>
+        {trials.length > 0 && <TrialsList trials={trials} />}
       </main>
     </div>
   );

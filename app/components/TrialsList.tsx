@@ -37,10 +37,9 @@ const TrialsList: React.FC<TrialsListProps> = ({ trials }) => {
       };
     
       return (
-        <div className="p-6 max-w-4xl mx-auto">
-          <h2 className="text-2xl font-bold mb-4 text-gray-100">Matching Clinical Trials</h2>
-          
-          <div className="overflow-x-auto shadow-lg rounded-lg">
+        <div>
+          <h2 className="text-2xl font-bold mb-4 text-gray-100">{trials.length} Related Clinical Trials</h2>
+          <div className="overflow-x-auto rounded-lg">
             <table className="min-w-full bg-white border border-gray-200">
               <thead className="bg-gray-50">
                 <tr>

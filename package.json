@@ -12,6 +12,7 @@
     "@anthropic-ai/sdk": "^0.64.0",
     "axios": "^1.12.2",
     "lucide": "^0.544.0",
+    "lucide-react": "^0.544.0",
     "next": "^15.5.4",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
