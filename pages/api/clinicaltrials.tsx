@@ -11,6 +11,7 @@ const OR_OPERAND = ' OR ';
 type UrlBuilderParams = {
     baseUrl: string;
     queryTerms?: ClinicalTrialsQueryTerms;
+    pageSize: number;
     format?: string;
 };
 
@@ -25,6 +26,7 @@ type UrlBuilderParams = {
 function buildUrl({
     baseUrl,
     queryTerms,
+    pageSize = 10,
     format = 'json'
   }: UrlBuilderParams): string {
     // Remove trailing slash from baseUrl if present.
@@ -33,8 +35,8 @@ function buildUrl({
     // Create URLSearchParams to properly encode query parameters.
     const params = new URLSearchParams();
     
-    // Add format parameter.
     params.append('format', format);
+    params.append('pageSize', pageSize.toString());
     
     // Add query parameters.
     if (queryTerms) {
@@ -81,7 +83,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const queryTerms: ClinicalTrialsQueryTerms = JSON.parse(body);
 
   try {
-    const clinicalTrialsUrl = buildUrl({baseUrl: CLINICAL_TRIALS_STUDIES_API_ENDPOINT, queryTerms});
+    const clinicalTrialsUrl = buildUrl({baseUrl: CLINICAL_TRIALS_STUDIES_API_ENDPOINT, pageSize: 500, queryTerms});
     const response = await fetch(clinicalTrialsUrl);
 
     if (!response.ok) {

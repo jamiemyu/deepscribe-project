@@ -96,6 +96,8 @@ export default function Page() {
 
     let llmResponse = "";
     try {
+      // TODO - Implement AI thought process streamed to the client. This way, the user can see
+      // why the processing is taking time.
       const data = await callClaudeApi(prompt);
       if (data && data.response.length > 0) {
         llmResponse = data.response[0].text;
@@ -113,6 +115,8 @@ export default function Page() {
       if (data == undefined) {
         setError('Error: Empty response from Clinical Trials API');
       } else {
+        // TODO - Implement ranking here. Use another call to Claude to generate ranked list
+        // using relevancy criteria/rubric.
         const trials = convertClinicalApiResponseToTrials(data);
         setTrials(trials);
       }

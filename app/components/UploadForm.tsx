@@ -20,7 +20,7 @@ const UploadForm: React.FC<UploadFormProps> = (
         <div className="inline-flex items-center justify-center w-16 h-16 bg-green-800/10 rounded-full mb-4">
             <FileText className="w-8 h-8 text-green-800" />
         </div>
-        <p className="text-gray-600 mt-2">Select a .txt file to upload and process</p>
+        <p className="text-gray-600 mt-2">Select a file (.txt or .csv) to upload and process</p>
         </div>
 
         {!complete ? (
@@ -35,13 +35,13 @@ const UploadForm: React.FC<UploadFormProps> = (
                 <p className="text-sm text-gray-600">
                     {file ? file.name : 'Click to upload or drag and drop'}
                 </p>
-                <p className="text-xs text-gray-500 mt-1">.txt files only</p>
+                <p className="text-xs text-gray-500 mt-1">.txt and .csv files only</p>
                 </div>
                 <input 
                 id="file-upload" 
                 type="file" 
                 className="hidden" 
-                accept=".txt,text/plain"
+                accept=".txt,.csv,text/plain"
                 onChange={onFileChange}
                 disabled={loading}
                 />

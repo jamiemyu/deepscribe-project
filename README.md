@@ -79,6 +79,7 @@ In order to develop, it's preferable to [set up a virtual environment](https://w
 1. Start the server locally:
 
 ```bash
+npm run build
 npm run dev
 ```
 
