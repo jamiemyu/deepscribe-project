@@ -17,8 +17,8 @@ const UploadForm: React.FC<UploadFormProps> = (
     return (
         <div className="bg-white/75 rounded-lg shadow-xl p-8 w-full self-center">
         <div className="text-center mb-6">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 rounded-full mb-4">
-            <FileText className="w-8 h-8 text-indigo-600" />
+        <div className="inline-flex items-center justify-center w-16 h-16 bg-green-800/10 rounded-full mb-4">
+            <FileText className="w-8 h-8 text-green-800" />
         </div>
         <p className="text-gray-600 mt-2">Select a .txt file to upload and process</p>
         </div>
@@ -28,10 +28,10 @@ const UploadForm: React.FC<UploadFormProps> = (
             <div>
             <label 
                 htmlFor="file-upload" 
-                className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-indigo-500 hover:bg-indigo-50 transition-colors"
+                className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-green-800 hover:bg-green-800/10 transition-colors"
             >
                 <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                <Upload className="w-10 h-10 text-gray-400 mb-2" />
+                <Upload className="w-10 h-10 text-green-800 mb-2" />
                 <p className="text-sm text-gray-600">
                     {file ? file.name : 'Click to upload or drag and drop'}
                 </p>
@@ -57,7 +57,7 @@ const UploadForm: React.FC<UploadFormProps> = (
             <button
             type="submit"
             disabled={!file || loading}
-            className="w-full bg-indigo-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+            className="w-full bg-green-800 text-white py-3 px-4 rounded-lg font-medium hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
             >
             {loading ? (
                 <>
