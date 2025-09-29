@@ -1,0 +1,2 @@
+# Prompt used to generate synthetic Patient<>Provider conversations with key conditions, terms, and interventions/treatments
+Generate 2 synthetic examples of patient-provider conversations, with mentions of conditions (examples: "Pain, Chronic","Upper Extremity Problem"), terms (examples: "Adenocarcinoma", "Neoplasms by Site", "Heterocyclic Compounds, 2-Ring") and interventions/treatments (examples: "Hypofractionated radiation therapy", "blood sample", "Computed Tomography")
