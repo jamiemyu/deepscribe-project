@@ -31,8 +31,8 @@ export interface Trial {
     hasResults: boolean;
 }
 
-function convertClinicalApiResponseToTrials(apiResponse: ClinicalTrialsApiResponse): Trial[] {
-    const trials: Trial[] = [];
+function convertClinicalApiResponseToTrials(apiResponse: ClinicalTrialsApiResponse): Map<string, Trial> {
+    let trials: Map<string, Trial> = new Map<string, Trial>();
     const studies: ClinicalTrialsStudy[] = apiResponse.studies;
 
     for (const study of studies) {
@@ -45,7 +45,7 @@ function convertClinicalApiResponseToTrials(apiResponse: ClinicalTrialsApiRespon
         }
 
         const trial = {title, nctId, status, hasResults};
-        trials.push(trial);
+        trials.set(nctId, trial);
     }
 
     return trials;

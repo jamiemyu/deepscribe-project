@@ -20,7 +20,6 @@ const UploadForm: React.FC<UploadFormProps> = (
         <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 rounded-full mb-4">
             <FileText className="w-8 h-8 text-indigo-600" />
         </div>
-        <h1 className="text-2xl font-bold text-gray-800">Upload Text File</h1>
         <p className="text-gray-600 mt-2">Select a .txt file to upload and process</p>
         </div>
 

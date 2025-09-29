@@ -4,12 +4,12 @@ import { Trial, TrialStatus } from './TrialModel';
 
 interface TrialsListProps {
     trials: Array<Trial>;
+    onTrialClick: React.MouseEventHandler;
 }
 
-const TrialsList: React.FC<TrialsListProps> = ({ trials }) => {
+const TrialsList: React.FC<TrialsListProps> = ({ trials, onTrialClick }) => {
     const renderTrial = (trial: Trial) => (
-        // TODO - Add onClick behavior to open trial details.
-        <tr key={trial.nctId} className="hover:bg-gray-50">
+      <tr onClick={onTrialClick} key={trial.nctId} data-item-id={trial.nctId} className="hover:bg-gray-50">
         <td className="px-6 py-4 text-sm text-gray-900 border-b border-gray-100">
             {trial.title}
         </td>
@@ -18,7 +18,7 @@ const TrialsList: React.FC<TrialsListProps> = ({ trials }) => {
             {trial.status}
             </span>
         </td>
-        </tr>
+      </tr>
     );
 
     const getStatusColor = (status: TrialStatus) => {
@@ -38,7 +38,6 @@ const TrialsList: React.FC<TrialsListProps> = ({ trials }) => {
     
       return (
         <div>
-          <h2 className="text-2xl font-bold mb-4 text-gray-100">{trials.length} Related Clinical Trials</h2>
           <div className="overflow-x-auto rounded-lg">
             <table className="min-w-full bg-white border border-gray-200">
               <thead className="bg-gray-50">

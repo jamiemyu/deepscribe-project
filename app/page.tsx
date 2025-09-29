@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 
 import UploadForm from './components/UploadForm';
 import TrialsList from './components/TrialsList';
+import TrialView from './components/TrialView';
 import { convertClinicalApiResponseToTrials, Trial } from './components/TrialModel';
 
 export default function Page() {
@@ -12,7 +13,8 @@ export default function Page() {
   const [complete, setComplete] = useState<boolean>(false);
 
   const [file, setFile] = useState<File | null>(null);
-  const [trials, setTrials] = useState<Array<Trial>>([]);
+  const [trials, setTrials] = useState<Map<string, Trial> | null>(null);
+  const [trial, setTrial] = useState<Trial | null>(null);
 
   const callClaudeApi = async (prompt: string) => {
     const response = await fetch('/api/claude', {
@@ -122,19 +124,39 @@ export default function Page() {
     }
   };
 
+  const handleTrialClick = async (e: React.MouseEvent) => {
+    const targetElement = e.currentTarget as HTMLElement;
+    if (targetElement && targetElement.dataset) {
+      const trialId = targetElement.dataset.itemId;
+      if (trialId && trials) {
+        const trial: Trial = trials.get(trialId) as Trial;
+        setTrial(trial);
+      }
+    }
+  };
+
   return (
     <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-10">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <h1 className="text-2xl font-bold text-white">Clinical Trials Finder</h1>
-        <UploadForm onFileChange={handleFileChange}
-                    onReset={handleFormReset}
-                    onSubmit={handleFormSubmit}
-                    file={file}
-                    error={error}
-                    loading={loading}
-                    complete={complete}/>
-        {trials.length > 0 && <TrialsList trials={trials} />}
-      </main>
+        {trial ?
+          <TrialView trial={trial} />
+        :
+          <main className="flex flex-col gap-[16px] row-start-2 items-center sm:items-start">
+            <h1 className="self-start text-2xl font-bold text-white">Clinical Trials Finder</h1>
+            <UploadForm onFileChange={handleFileChange}
+                        onReset={handleFormReset}
+                        onSubmit={handleFormSubmit}
+                        file={file}
+                        error={error}
+                        loading={loading}
+                        complete={complete}/>
+            {trials && trials.size > 0 && 
+              <div>
+                <h2 className="mb-4 text-2xl font-bold text-white">{trials.size} Related Clinical Trials</h2>
+                <TrialsList trials={Array.from(trials.values())} onTrialClick={handleTrialClick} />
+              </div>
+            }
+          </main>
+        }
     </div>
   );
 }
