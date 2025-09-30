@@ -24,19 +24,19 @@ const TrialsList: React.FC<TrialsListProps> = ({ trials, onTrialClick }) => {
             {trial.status}
             </span>
         </td>
-        {trial.matchedConditions.length > 0 ?
+        {trial.matchedConditions && trial.matchedConditions.length > 0 ?
           <td className="p-2 border-b border-gray-100">
               {trial.matchedConditions.map(renderMatches)}
           </td> :
           <td className="p-2 border-b border-gray-100"></td>
           }
-        {trial.matchedTerms.length > 0 ?
+        {trial.matchedTerms && trial.matchedTerms.length > 0 ?
           <td className="p-2 border-b border-gray-100">
               {trial.matchedTerms.map(renderMatches)}
           </td> :
           <td className="p-2 border-b border-gray-100"></td>
           }
-        {trial.matchedInterventions.length > 0 ?
+        {trial.matchedInterventions && trial.matchedInterventions.length > 0 ?
           <td className="p-2 border-b border-gray-100">
               {trial.matchedInterventions.map(renderMatches)}
           </td> :

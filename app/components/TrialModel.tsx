@@ -62,9 +62,9 @@ export interface Trial {
     status?: TrialStatus;
     hasResults: boolean;
     protocolSection: ProtocolSection;
-    matchedConditions: string[];
-    matchedTerms: string[];
-    matchedInterventions: string[];
+    matchedConditions?: string[];
+    matchedTerms?: string[];
+    matchedInterventions?: string[];
 }
 
 function convertToTrialStatus(status: string): TrialStatus {
