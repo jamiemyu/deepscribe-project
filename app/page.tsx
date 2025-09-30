@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 import UploadForm from './components/UploadForm';
@@ -15,16 +15,28 @@ export default function Page() {
   const [complete, setComplete] = useState<boolean>(false);
 
   const [file, setFile] = useState<File | null>(null);
-  const [trials, setTrials] = useState<Map<string, Trial> | null>(null);
-  const [trial, setTrial] = useState<Trial | null>(null);
+  const [trials, ] = useState<Map<string, Trial> | null>(null);
+  const [, setTrial] = useState<Trial | null>(null);
 
-  const callClaudeApi = async (prompt: string) => {
-    const response = await fetch('/api/claude', {
+  const callClaudeExtractMetadataApi = async (prompt: string) => {
+    const response = await fetch('/api/claude/extractmetadata', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ prompt }),
+    });
+    const data = await response.json();
+    return data;
+  };
+
+  const callClaudeRerankStudiesApi = async (trials: Map<string, Trial>, extractedMetadata: string) => {
+    const response = await fetch('/api/claude/rerankstudies', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ trials, extractedMetadata }),
     });
     const data = await response.json();
     return data;
@@ -71,7 +83,7 @@ export default function Page() {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
 
-      reader.onload = (e: ProgressEvent) => {
+      reader.onload = () => {
         if (reader.result) {
           resolve(reader.result as string);
         }
@@ -83,7 +95,7 @@ export default function Page() {
 
       reader.readAsText(file);
     });
-  }
+  };
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,13 +108,13 @@ export default function Page() {
     }
     const prompt = await processFile(file);
 
-    let llmResponse = "";
+    let extractedMetadata = "";
     try {
       // TODO - Implement AI thought process streamed to the client. This way, the user can see
       // why the processing is taking time.
-      const data = await callClaudeApi(prompt);
+      const data = await callClaudeExtractMetadataApi(prompt);
       if (data && data.response.length > 0) {
-        llmResponse = data.response[0].text;
+        extractedMetadata = data.response[0].text;
       }
     } catch (error) {
       console.error('Error fetching Claude response:', error);
@@ -112,21 +124,36 @@ export default function Page() {
     }
 
     setLoading(true);
+    let trials = new Map<string, Trial>();
     try {
-      const data = await callClinicalTrialsApi(llmResponse);
+      const data = await callClinicalTrialsApi(extractedMetadata);
       if (data == undefined) {
         setError('Error: Empty response from Clinical Trials API');
       } else {
-        // TODO - Implement ranking here. Use another call to Claude to generate ranked list
-        // using relevancy criteria/rubric.
-        const trials = convertClinicalApiResponseToTrials(data);
-        setTrials(trials);
+        trials = convertClinicalApiResponseToTrials(data);
       }
     } catch (error) {
       console.error('Error fetching ClinicalTrials response:', error);
       setError('Error: Could not get response from ClinicalTrials API.');
     } finally {
-      setLoading(false)
+      setLoading(false);
+    }
+
+    setLoading(true);
+    try {
+      const rerankedStudies = await callClaudeRerankStudiesApi(trials, extractedMetadata);
+      if (rerankedStudies == undefined) {
+        setError('Error: Empty response from Claude API');
+      } else {
+        // const trials: Trial[] = JSON.parse(rerankedStudies);
+        // Get top 10?
+        // setTrials
+      }
+    } catch (error) {
+      console.error('Error fetching ClinicalTrials response:', error);
+      setError('Error: Could not get response from ClinicalTrials API.');
+    } finally {
+      setLoading(false);
     }
   };
 

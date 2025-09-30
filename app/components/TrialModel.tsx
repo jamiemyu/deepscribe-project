@@ -43,18 +43,8 @@ interface ProtocolSection {
     sponsorCollaboratorsModule: SponsorCollaboratorsModule,
 }
 
-interface DocumentSection {
-    // TODO - Implement strict typing
-}
-
-interface DerivedSection {
-    // TODO - Implement strict typing
-}
-
 interface ClinicalTrialsStudy {
     protocolSection: ProtocolSection,
-    documentSection: DocumentSection,
-    derivedSection: DerivedSection,
     hasResults: boolean;
 }
 
@@ -89,8 +79,26 @@ function convertToTrialStatus(status: string): TrialStatus {
     }
 }
 
+function toTrialsMap(trials: Trial[]): Map<string, Trial> {
+    const trialsMap: Map<string, Trial> = new Map<string, Trial>();
+
+    for (const trial of trials) {
+        const protocolSection = trial.protocolSection;
+        const title = protocolSection.identificationModule.briefTitle;
+        const nctId = protocolSection.identificationModule.nctId;
+        const status = convertToTrialStatus(protocolSection.statusModule.overallStatus);
+        const hasResults = trial.hasResults;
+        if (!title || !nctId) {
+            console.warn("convertClinicalApiResponseToTrials: study is missing fields but requires: title, id");
+        }
+
+        trialsMap.set(nctId, {title, nctId, status, hasResults, protocolSection});
+    }
+    return trialsMap;
+}
+
 function convertClinicalApiResponseToTrials(apiResponse: ClinicalTrialsApiResponse): Map<string, Trial> {
-    let trials: Map<string, Trial> = new Map<string, Trial>();
+    const trials: Map<string, Trial> = new Map<string, Trial>();
     const studies: ClinicalTrialsStudy[] = apiResponse.studies;
 
     for (const study of studies) {
@@ -100,7 +108,7 @@ function convertClinicalApiResponseToTrials(apiResponse: ClinicalTrialsApiRespon
         const status = convertToTrialStatus(protocolSection.statusModule.overallStatus);
         const hasResults = study.hasResults;
         if (!title || !nctId) {
-            console.warn("convertClinicalApiResponseToTrials: tudy is missing fields but requires: title, id");
+            console.warn("convertClinicalApiResponseToTrials: study is missing fields but requires: title, id");
         }
 
         const trial = {title, nctId, status, hasResults, protocolSection};
@@ -128,5 +136,6 @@ function getStatusColor(status: TrialStatus = TrialStatus.TRIAL_STATUS_UNKNOWN) 
 export {
     convertClinicalApiResponseToTrials,
     getStatusColor,
+    toTrialsMap,
     TrialStatus,
-}
+};

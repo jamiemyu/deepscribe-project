@@ -1,5 +1,5 @@
 // components/InputForm.tsx
-import React, { useState } from 'react';
+import React from 'react';
 
 interface InputFormProps {
   onPromptChange: React.FormEventHandler;

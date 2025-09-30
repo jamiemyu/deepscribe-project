@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { getStatusColor, Trial, TrialStatus } from './TrialModel';
+import React from 'react';
+import { getStatusColor, Trial } from './TrialModel';
 
 interface TrialsListProps {
     trials: Array<Trial>;
