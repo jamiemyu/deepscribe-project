@@ -9,7 +9,7 @@ interface TrialsListProps {
 
 const TrialsList: React.FC<TrialsListProps> = ({ trials, onTrialClick }) => {
     const renderMatches = (word: string) => (
-      <span className={`inline-flex py-1 text-xs text-gray-700 rounded-full text-start`}>
+      <span key={word} className={`inline-flex py-1 text-xs text-gray-700 rounded-full text-start`}>
         "{word.toLowerCase()}"
       </span>
     );

@@ -42,7 +42,8 @@ Intervention Match (33%): Does the study test any of the specified interventions
 
 ## Format Output
 
-Return ONLY valid JSON with the studies ordered by relevance_score (highest first). The final JSON MUST strictly conform to the following structure and data types. Adhere to this exactly.
+Return ONLY valid JSON with the studies ordered by relevance_score (highest first). Do not include any study with a relevance_score less than 75.
+The final JSON MUST strictly conform to the following structure and data types. Adhere to this exactly.
 {
   "studies": [
     {

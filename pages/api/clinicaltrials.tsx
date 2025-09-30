@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 const CLINICAL_TRIALS_STUDIES_API_ENDPOINT = "https://clinicaltrials.gov/api/v2/studies";
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 15;
 const OR_OPERAND = ' OR ';
 
 interface ClinicalTrialsQueryTerms {
