@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.64.0",
+    "@eslint/config-helpers": "^0.4.0",
     "axios": "^1.12.2",
     "lucide": "^0.544.0",
     "lucide-react": "^0.544.0",
