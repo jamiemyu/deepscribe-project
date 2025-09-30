@@ -5,18 +5,16 @@ import { useRouter } from 'next/navigation';
 
 import UploadForm from './components/UploadForm';
 import TrialsList from './components/TrialsList';
-//import TrialView from './trials/page';
 import { convertClinicalApiResponseToTrials, Trial } from './components/TrialModel';
 
 export default function Page() {
   const router = useRouter();
   const [error, setError] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<string>('');
   const [complete, setComplete] = useState<boolean>(false);
 
   const [file, setFile] = useState<File | null>(null);
-  const [trials, ] = useState<Map<string, Trial> | null>(null);
-  const [, setTrial] = useState<Trial | null>(null);
+  const [trials, setTrials] = useState<Map<string, Trial> | null>(null);
 
   const callClaudeExtractMetadataApi = async (prompt: string) => {
     const response = await fetch('/api/claude/extractmetadata', {
@@ -36,7 +34,7 @@ export default function Page() {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ trials, extractedMetadata }),
+      body: JSON.stringify({ trials: [...trials.values()], extractedMetadata }),
     });
     const data = await response.json();
     return data;
@@ -99,7 +97,6 @@ export default function Page() {
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
 
     if (file == null) {
       handleFormReset();
@@ -110,6 +107,7 @@ export default function Page() {
 
     let extractedMetadata = "";
     try {
+      setLoading("Extracting key information...");
       // TODO - Implement AI thought process streamed to the client. This way, the user can see
       // why the processing is taking time.
       const data = await callClaudeExtractMetadataApi(prompt);
@@ -118,14 +116,14 @@ export default function Page() {
       }
     } catch (error) {
       console.error('Error fetching Claude response:', error);
-      setError('Error: Could not get response from Claude.');
+      setError('Error: Could not get response from Claude Extract Metadata API.');
     } finally {
-      setLoading(false);
+      setLoading('');
     }
 
-    setLoading(true);
     let trials = new Map<string, Trial>();
     try {
+      setLoading("Searching for studies...");
       const data = await callClinicalTrialsApi(extractedMetadata);
       if (data == undefined) {
         setError('Error: Empty response from Clinical Trials API');
@@ -136,25 +134,42 @@ export default function Page() {
       console.error('Error fetching ClinicalTrials response:', error);
       setError('Error: Could not get response from ClinicalTrials API.');
     } finally {
-      setLoading(false);
+      setLoading('');
     }
 
-    setLoading(true);
     try {
-      const rerankedStudies = await callClaudeRerankStudiesApi(trials, extractedMetadata);
-      if (rerankedStudies == undefined) {
-        setError('Error: Empty response from Claude API');
-      } else {
-        // const trials: Trial[] = JSON.parse(rerankedStudies);
-        // Get top 10?
-        // setTrials
+      setLoading("Choosing relevant studies...");
+      const data = await callClaudeRerankStudiesApi(trials, extractedMetadata);
+      if (data && data.response.length > 0) {
+        let rerankedStudiesData = JSON.parse(data.response[0].text);
+        setTrials(rerankTrials(trials, rerankedStudiesData.studies));
       }
     } catch (error) {
-      console.error('Error fetching ClinicalTrials response:', error);
-      setError('Error: Could not get response from ClinicalTrials API.');
+      console.error('Error fetching Claude response:', error);
+
+      // Fallback to unranked trials.
+      setTrials(trials);
     } finally {
-      setLoading(false);
+      setLoading('');
     }
+  };
+
+  const rerankTrials = (trials: Map<string, Trial>, rerankedStudiesData: any[]): Map<string, Trial> => {
+    let rankedTrials = new Map<string, Trial>();
+    for (let rerankedStudyData of rerankedStudiesData) {
+      const nctId = rerankedStudyData.nctId;
+      const relevanceMetadata = rerankedStudyData.relevanceMetadata;
+
+      const trial = trials.get(nctId);
+      if (trial) {
+        trial.matchedConditions = relevanceMetadata.matchedConditions;
+        trial.matchedTerms = relevanceMetadata.matchedTerms;
+        trial.matchedInterventions = relevanceMetadata.matchedInterventions;
+        rankedTrials.set(nctId, trial);
+      }
+    }
+
+    return rankedTrials;
   };
 
   const handleTrialClick = async (e: React.MouseEvent) => {
@@ -162,8 +177,8 @@ export default function Page() {
     if (targetElement && targetElement.dataset) {
       const trialId = targetElement.dataset.itemId;
       if (trialId && trials) {
-        const trial: Trial = trials.get(trialId) as Trial;
-        setTrial(trial);
+        //const trial: Trial = trials.get(trialId) as Trial;
+        // setTrial(trial);
         router.push(`/trials/${trialId}`);
       }
     }

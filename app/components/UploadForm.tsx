@@ -8,12 +8,13 @@ interface UploadFormProps {
   onSubmit: React.FormEventHandler;
   file: File | null;
   error: string;
-  loading: boolean;
+  loading: string;
   complete: boolean;
 }
 
 const UploadForm: React.FC<UploadFormProps> = (
   { onFileChange, onReset, onSubmit, file, error, loading, complete}) => {
+    const isLoading = loading !== '';
     return (
         <div className="bg-white/75 rounded-lg shadow-xl p-8 w-full self-center">
         <div className="text-center mb-6">
@@ -43,7 +44,7 @@ const UploadForm: React.FC<UploadFormProps> = (
                 className="hidden" 
                 accept=".txt,.csv,text/plain"
                 onChange={onFileChange}
-                disabled={loading}
+                disabled={isLoading}
                 />
             </label>
             </div>
@@ -56,13 +57,13 @@ const UploadForm: React.FC<UploadFormProps> = (
 
             <button
             type="submit"
-            disabled={!file || loading}
+            disabled={!file || isLoading}
             className="w-full bg-green-800 text-white py-3 px-4 rounded-lg font-medium hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
             >
-            {loading ? (
+            {isLoading ? (
                 <>
                 <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                Processing...
+                {loading}
                 </>
             ) : (
                 'Upload and Process'

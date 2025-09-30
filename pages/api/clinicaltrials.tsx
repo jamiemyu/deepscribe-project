@@ -1,6 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
 const CLINICAL_TRIALS_STUDIES_API_ENDPOINT = "https://clinicaltrials.gov/api/v2/studies";
+const PAGE_SIZE = 10;
 const OR_OPERAND = ' OR ';
 
 interface ClinicalTrialsQueryTerms {
@@ -87,7 +88,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   const queryTerms: ClinicalTrialsQueryTerms = JSON.parse(body);
 
   try {
-    const clinicalTrialsUrl = buildUrl({baseUrl: CLINICAL_TRIALS_STUDIES_API_ENDPOINT, pageSize: 500, queryTerms});
+    const clinicalTrialsUrl = buildUrl({baseUrl: CLINICAL_TRIALS_STUDIES_API_ENDPOINT, pageSize: PAGE_SIZE, queryTerms});
     const response = await fetch(clinicalTrialsUrl);
 
     if (!response.ok) {
@@ -100,4 +101,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     console.error('Error calling Clinical Trials API:', error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
+}
+
+export const config = {
+    api: {
+        responseLimit: false,
+    },
 }

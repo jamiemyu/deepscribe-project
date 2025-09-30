@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import Anthropic from '@anthropic-ai/sdk';
 
-const SYSTEM_PROMPT = `You are a clinical trial search assistant specialized in re-ranking studies based on medical concepts extracted from patient-provider conversations. Your task is to analyze a list of clinical trial studies and reorder them by relevance to the extracted medical information.
+const RELEVANCE_RANKING_SYSTEM_PROMPT = `You are a clinical trial search assistant specialized in re-ranking studies based on medical concepts extracted from patient-provider conversations. Your task is to analyze a list of clinical trial studies and reorder them by relevance to the extracted medical information.
 
 # Input Format
 You will receive:
@@ -40,23 +40,24 @@ Intervention Match (33%): Does the study test any of the specified interventions
 *   20-39: Weak match - distant connection or single minor element matches
 *   0-19: Poor match - no meaningful alignment
 
-## Output Format
-Return a JSON response with studies ranked by relevance_score (highest first):
+## Format Output
 
+Return ONLY valid JSON with the studies ordered by relevance_score (highest first). The final JSON MUST strictly conform to the following structure and data types. Adhere to this exactly.
 {
-  "reranked_studies": [
+  "studies": [
     {
       "nctId": "NCT########",
-      "relevance_score": 0-100,
-      "match_details": {
-        "matched_conditions": [],
-        "matched_interventions": [],
-        "matched_terms": []
-      },
-      "relevance_reasoning": "Concise explanation of score"
+      "relevanceMetadata": {
+        "relevanceScore": 85,
+        "matchedConditions": ["condition1"],
+        "matchedInterventions": ["intervention1"],
+        "matchedTerms": ["term1"]
+      }
     }
-  ],
+  ]
 }
+
+Critical: Return ONLY the JSON structure. No explanatory text before or after. No markdown code blocks. Just the raw JSON object.
 
 # Analysis Principles
 
@@ -82,8 +83,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   const { trials, extractedMetadata } = await req.body;
-  console.log(trials);
-  console.log(extractedMetadata);
 
   if (!trials || !extractedMetadata) {
     return res.status(400).json({ message: 'Trials and metadata are both required for re-ranking' });
@@ -94,11 +93,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       apiKey: process.env.CLAUDE_API_KEY,
     });
 
+    const content = `There are two inputs:
+    1) The trials to rerank in JSON format: ${JSON.stringify(trials)}
+    2) The conditions, terms, and interventions in JSON format: ${JSON.stringify(extractedMetadata)}`;
+
     const msg = await anthropic.messages.create({
       model: "claude-sonnet-4-0",
-      max_tokens: 1024,
-      system: SYSTEM_PROMPT,
-      messages: [{ role: "user", content: trials }, { role: "user", content: extractedMetadata }],
+      max_tokens: 2048,
+      system: RELEVANCE_RANKING_SYSTEM_PROMPT,
+      messages: [{ role: "user", content }],
     });
 
     res.status(200).json({ response: msg.content });
@@ -107,3 +110,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     res.status(500).json({ message: 'Internal Server Error' });
   }
 }
+
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb', // Adjust as needed
+    },
+  },
+};
