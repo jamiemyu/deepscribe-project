@@ -1,9 +1,13 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
-import { ClinicalTrialsApiResponse, ClinicalTrialsQueryTerms } from './ClinicalTrialsModel';
 
 const CLINICAL_TRIALS_STUDIES_API_ENDPOINT = "https://clinicaltrials.gov/api/v2/studies";
 const OR_OPERAND = ' OR ';
 
+interface ClinicalTrialsQueryTerms {
+    conditions: string[],
+    terms: string[],
+    interventions: string[],
+}
 
 /**
  * Represents the URL query parameters.
@@ -90,7 +94,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         throw new Error(`ClinicalTrials.gov API responded with status ${response.status}`);
     }
 
-    const data: ClinicalTrialsApiResponse = await response.json();
+    const data = await response.json();
     res.status(200).json(data);
   } catch (error) {
     console.error('Error calling Clinical Trials API:', error);

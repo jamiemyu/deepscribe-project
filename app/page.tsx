@@ -1,13 +1,15 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 import UploadForm from './components/UploadForm';
 import TrialsList from './components/TrialsList';
-import TrialView from './components/TrialView';
+//import TrialView from './trials/page';
 import { convertClinicalApiResponseToTrials, Trial } from './components/TrialModel';
 
 export default function Page() {
+  const router = useRouter();
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [complete, setComplete] = useState<boolean>(false);
@@ -135,32 +137,29 @@ export default function Page() {
       if (trialId && trials) {
         const trial: Trial = trials.get(trialId) as Trial;
         setTrial(trial);
+        router.push(`/trials/${trialId}`);
       }
     }
   };
 
   return (
     <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-10">
-        {trial ?
-          <TrialView trial={trial} />
-        :
-          <main className="flex flex-col gap-[16px] row-start-2 items-center sm:items-start">
-            <h1 className="self-start text-2xl font-bold text-white">Clinical Trials Finder</h1>
-            <UploadForm onFileChange={handleFileChange}
-                        onReset={handleFormReset}
-                        onSubmit={handleFormSubmit}
-                        file={file}
-                        error={error}
-                        loading={loading}
-                        complete={complete}/>
-            {trials && trials.size > 0 && 
-              <div>
-                <h2 className="mb-4 text-2xl font-bold text-white">{trials.size} Related Clinical Trials</h2>
-                <TrialsList trials={Array.from(trials.values())} onTrialClick={handleTrialClick} />
-              </div>
-            }
-          </main>
+      <main className="flex flex-col gap-[16px] row-start-2 items-center sm:items-start">
+        <h1 className="self-start text-2xl font-bold text-white">Clinical Trials Finder</h1>
+        <UploadForm onFileChange={handleFileChange}
+                    onReset={handleFormReset}
+                    onSubmit={handleFormSubmit}
+                    file={file}
+                    error={error}
+                    loading={loading}
+                    complete={complete}/>
+        {trials && trials.size > 0 && 
+          <div>
+            <h2 className="mb-4 text-2xl font-bold text-white">{trials.size} Related Clinical Trials</h2>
+            <TrialsList trials={Array.from(trials.values())} onTrialClick={handleTrialClick} />
+          </div>
         }
+      </main>
     </div>
   );
 }
