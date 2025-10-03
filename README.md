@@ -29,9 +29,9 @@ Navigate to [http://localhost:3000](http://localhost:3000) with your browser to 
 
 The repository contains the example files that can be used to test the application: `SyntheticConversation1.txt`, `SyntheticConversation2.txt`. Alternatively, you can use (and/or modify) the Prompt used to generate synthetic patient/provider conversations using `PromptSyntheticConversation.md` (the examples above used this prompt with Claude, but Gemini and ChatGPT are other options).
 
+[Home page](./public/home-page-demo.png)
 
-
-
+[Details page](./public/details-page-demo.png)
 
 # Implementation Overview
 The App Server follows a monolith design. A single API call from the client will handle:
@@ -43,6 +43,7 @@ The key business logic includes:
 2. Clinical Trial Search: Search for clinical trial data from external backends.
 3. Relevancy Ranking: Interact with external LLM backends in order to compute a "relevance score" for each clinical trial found, based on how well they match against the extracted inputs.
     -   Edge case: If this API call fails, we fallback to the unranked clinical trials.
+4. Trial details: Shows the details for a given trial.
 
 The benefit of this design means the business logic for these key steps are abstracted away behind units and kept as three "stages" of the flow. The actual technologies and capabilities can be swapped under the hood, but the inputs/outputs should remain consistent.
 
@@ -62,7 +63,6 @@ We use API routes to define each external API:
 ## System Assumptions
 *   The _size_ of the patient/provider conversation input should be small enough to fit within the API limits aka Claude's maximum tokens requirement (200,000).
 *   Given we are using LLMs for two steps (metadata extraction, ranking) there is going to be latency. We can afford some latency in this application.
-*    
 
 ## TODOs (If I had more time to work on this!)
 * [ ]   **Improve extraction details.** Currently, the prompt asks Claude to pull out key terms, conditions, and interventions mentioned in the patient/provider conversation. While these are 3 useful details used to query the Clinical Trials API, there are other query terms that could be useful to help improve the search.
