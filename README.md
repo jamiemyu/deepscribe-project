@@ -1,87 +1,64 @@
 # About
-Repository for hosting code for a backend used in the DeepScribe take-home assignment. This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-
-# Assignment
-
-## Product Requirements
-1. **Transcript Input**
-    - Use a simulated transcript that includes relevant details like patient history, symptoms, treatment plans, etc.
-    - The transcript should reflect a realistic patient/provider conversation. You can ask an LLM to generate one.
-2. **Extract Patient Data via LLM**
-    - Create a backend service that takes a transcript and extracts relevant structured data using an LLM.
-    - Prompt an LLM of your choice (e.g., OpenAI, Gemini, Claude, etc.) to analyze the text.
-3. **Find Clinical Trials Matches**
-    - Use the publicly available API [ClinicalTrials.gov API](https://clinicaltrials.gov/data-api/api) to get a small set of relevant trials.
-    - Use as much filtering criteria as can be extracted from the step above.
-4. **Display the results**
-    - Create a simple web-based (or mobile if preferred) interface to render clinical trial recommendations.
-    - Make it easy to learn more about the specific trials.
-
-## Technical Requirements
-- **Full-Stack:** The application should have a backend (for handling the LLM and ClinicalTrials.gov API calls) and a frontend.
-- **Language/Framework:** You are free to use any programming language and framework you are comfortable with (e.g., Python/Flask, Node.js/Express, React, Vue, etc.).
-- **Documentation:** A `README.md` file is required. It must include:
-    1. A brief overview of your approach.
-    2. Deployed working demo (via Render, Vercel, AWS, etc).
-    3. Clear, step-by-step instructions on how to set up and run the project locally.
-    4. Any assumptions you made during development.
-
-## Assessment Criteria
-- **Functionality:** How well does the demo satisfy the core requirements?
-- **Code Quality:** Is the code modular and maintainable?
-- **User Experience:** Is the UI intuitive and responsive?
-- **Creativity and Flexibility:** We encourage you to be creative. Feel free to expand on the basic requirements and take the feature in innovative directions. Consider using AI to make thoughtful judgement calls about missing patient data, or using it to rank the matched trials. Consider allowing the patient to save the list of trials for later or even ask questions about specific trials.
-
-# Product Design
-
-## System Architecture
-The App Server follows a monolith design. A single API call from the client will handle:
-- Input: Patient/provider transcript
-- Output: Clinical Trials studies relevant to the transcript
-
-Excalidraw sketch: 
-
-The key business logic includes:
-1. Transcript Extraction: Interact with external LLM backends in order to extract important structured data from a patient/provider conversation transcript.
-2. Clinical Trial Search: Search for clinical trial data from external backends.
-The benefit of this design means the business logic for these key steps are abstracted away behind units and kept as two "stages" of the flow. The actual technologies and capabilities can be swapped under the hood, but the inputs/outputs should remain consistent.
-
-The rationale for monolith app instead of decoupled FE/BE microservices:
-1. We do not intend (at the moment) to handle the key stages in separate client interactions yet. A single interaction on the client (uploading the transcript to search for trials) matches the single API request/response flow.
-2. Microservices, while more maintainable and modular in nature, are heavier set-up at the start. If we need it soon, we can always refactor the business logic split into 2 chunks, into 2 microservices. In Django, this would be represented as 2 separate applications deployed together using some containerization mechanism.
-
-## API
-
-## Productionization Strategy
-To bring this server beyond local development, we'll leverage Vercel for simple and easy deployment.
-
-# Repository Details
-
-## What
-This is the Next.js Application used to host business logic used for a web application that takes in a patient/provider conversation transcript, and returns back a list of clinical trials that best match against the details described in the input.
+Repository for hosting code for a backend used in the DeepScribe take-home assignment. This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app). It hosts the business logic used for a web application that takes in a patient/provider conversation transcript, and returns back a list of clinical trials that best match against the details described in the input.
 
 The client uses React, Typescript, Tailwind CSS and is deployed using Vercel.
 
-## How-to develop (on Mac OS)
+**To access the production deployment, you can visit: https://deepscribe-project.vercel.app/.**
+
+# How-to: **local development** (on Mac OS)
 IMPORTANT: A pre-requisite is the developer should have an up-to-date Node npm version installed.
 
-### GitHub repository clone
-Using tool of choice, clone this repository.
+## Step 1: Clone GitHub repository:
+Using tool of choice, clone [this repository](https://github.com/jamiemyu/deepscribe-project.git).
 
-`git clone https://github.com/jamiemyu/deepscribe-project.git`
+e.g., `git clone https://github.com/jamiemyu/deepscribe-project.git`
 
-### Virtual Environment setup
-In order to develop, it's preferable to [set up a virtual environment](https://www.w3schools.com/django/django_create_virtual_environment.php) where all required installations are neatly available.
-1. `$python -m venv {ENVIRONMENT_NAME}`
-2. `source {ENVIRONMENT_NAME}/bin/activate`
-
-### How-to run
-1. Start the server locally:
+## Step 2: Run a local server:
+Start the server locally:
 
 ```bash
 npm run build
 npm run dev
 ```
 
-2. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Step 3: Open the local server in web:
+Navigate to [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
+The repository contains the example files that can be used to test the application: `SyntheticConversation1.txt`, `SyntheticConversation2.txt`. Alternatively, you can use (and/or modify) the Prompt used to generate synthetic patient/provider conversations using `PromptSyntheticConversation.md` (the examples above used this prompt with Claude, but Gemini and ChatGPT are other options).
+
+
+
+
+
+# Implementation Overview
+The App Server follows a monolith design. A single API call from the client will handle:
+- Input: Patient/provider transcript
+- Output: Clinical Trials studies relevant to the transcript
+
+The key business logic includes:
+1. Transcript Extraction: Interact with external LLM backends in order to extract important structured data from a patient/provider conversation transcript.
+2. Clinical Trial Search: Search for clinical trial data from external backends.
+3. Relevancy Ranking: Interact with external LLM backends in order to compute a "relevance score" for each clinical trial found, based on how well they match against the extracted inputs.
+    -   Edge case: If this API call fails, we fallback to the unranked clinical trials.
+
+The benefit of this design means the business logic for these key steps are abstracted away behind units and kept as three "stages" of the flow. The actual technologies and capabilities can be swapped under the hood, but the inputs/outputs should remain consistent.
+
+## API
+We use API routes to define each external API: `extractmetadata.tsx`, `clinicaltrials.tsx`, `rerankstudies.tsx`
+
+## Product Assumptions
+*   The patient/provider conversations should mention 3 important aspects: conditions, terms, and interventions. These are extracted, and anything else is currently excluded.
+*   The user prefers to see most relevant trials and does not need to see _all trials_/pages of trials (pagination not implemented).
+*   The user only needs to see some important metadata (trial's name, trial's status) before clicking into a trial to see more details.
+*   This application is to be used on Desktop (UI is not optimized for Mobile yet!)
+
+## System Assumptions
+*   The _size_ of the patient/provider conversation input should be small enough to fit within the API limits aka Claude's maximum tokens requirement (200,000).
+*   Given we are using LLMs for two steps (metadata extraction, ranking) there is going to be latency. We can afford some latency in this application.
+*    
+
+## TODOs (If I had more time to work on this!)
+* [ ]   **Improve extraction details.** Currently, the prompt asks Claude to pull out key terms, conditions, and interventions mentioned in the patient/provider conversation. While these are 3 useful details used to query the Clinical Trials API, there are other query terms that could be useful to help improve the search.
+* [ ]   **Evaluation.** Currently, there are several prompts used for key interactions with LLMs (Generating the synthetic patient/provider conversations, extracting key information from the conversations, calculating relevance and re-ranking studies). I didn't spend a lot of time evaluating the quality of the responses and it would be great to perform evaluation to assess for things like overfitting, hallucinations, etc. Additionally, we are currently testing these prompts with a single model/backend (Claude) but it could be worth using the same prompts with different model/backends (Gemini, ChatGPT APIs) to see how they perform.
+* [ ]   **Implement details view.** Currently, clicking on any trial from the main page list will route to a new page for showing the trial's details. Ideally we could use the trial's unique identifier (`nctId`) to fetch the full details of the study (using the Clinical Trials API) and structure the data in a digestible way in the UI.
+* [ ]   **Implement filtering & sorting.** It would be nice for the results list to have filter and sort-by functionality. E.g., if the user wants to click on the "Status" column, we should be able to re-rank the results list based on Status. For filtering, if the user wants to filter by "Recruiting" status, we should be able to render the results list with only studies with "Recruiting" status.

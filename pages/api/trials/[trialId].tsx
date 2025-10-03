@@ -1,18 +1,18 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-const CLINICAL_TRIALS_STUDIES_API_ENDPOINT = "https://clinicaltrials.gov/api/v2/studies/{{id}}";
+const CLINICAL_TRIALS_STUDIES_API_ENDPOINT = "https://clinicaltrials.gov/api/v2/studies/{{trialId}}";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { id } = await req.query;
+  const { trialId } = await req.query;
 
-  if (typeof id !== 'string') {
+  if (typeof trialId !== 'string') {
     return res.status(400).json({ message: 'Invalid ID provided.' });
   }
 
   try {
     if (req.method === 'GET') {
         const clinicalTrialsUrl = CLINICAL_TRIALS_STUDIES_API_ENDPOINT
-            .replace("{{id}}", id);
+            .replace("{{trialId}}", trialId);
         const response = await fetch(clinicalTrialsUrl);
 
         if (!response.ok) {
