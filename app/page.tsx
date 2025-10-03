@@ -186,7 +186,7 @@ export default function Page() {
 
   return (
     <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-24 sm:p-10">
-      <main className="min-w-full flex flex-col gap-[16px] row-start-2 items-center sm:items-start">
+      <main className="max-w-full min-w-full flex flex-col gap-[16px] row-start-2 items-center sm:items-start">
         <h1 className="self-start text-2xl font-bold text-white">Clinical Trials Finder</h1>
         <UploadForm onFileChange={handleFileChange}
                     onReset={handleFormReset}
@@ -196,7 +196,7 @@ export default function Page() {
                     loading={loading}
                     complete={complete}/>
         {trials && trials.size > 0 && 
-          <div>
+          <div className="max-w-full min-w-full">
             <h2 className="mb-4 text-2xl font-bold text-white">{trials.size} Related Clinical Trials</h2>
             <TrialsList trials={Array.from(trials.values())} onTrialClick={handleTrialClick} />
           </div>
