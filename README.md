@@ -29,9 +29,9 @@ Navigate to [http://localhost:3000](http://localhost:3000) with your browser to 
 
 The repository contains the example files that can be used to test the application: `SyntheticConversation1.txt`, `SyntheticConversation2.txt`. Alternatively, you can use (and/or modify) the Prompt used to generate synthetic patient/provider conversations using `PromptSyntheticConversation.md` (the examples above used this prompt with Claude, but Gemini and ChatGPT are other options).
 
-[Home page](./public/home-page-demo.png)
+![Home page](./public/home-page-demo.png)
 
-[Details page](./public/details-page-demo.png)
+![Details page](./public/details-page-demo.png)
 
 # Implementation Overview
 The App Server follows a monolith design. A single API call from the client will handle:
